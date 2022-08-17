@@ -1,0 +1,7 @@
+main: me.okay.coordsaver.CoordSaver
+name: CoordSaver
+version: 1.0
+author: okay
+api-version: 1.19
+
+commands:
