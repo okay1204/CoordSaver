@@ -5,3 +5,32 @@ author: okay
 api-version: 1.19
 
 commands:
+  globalcoords:
+    description: "Manage global coordinates."
+    usage: "/globalcoords"
+  
+permissions:
+  coordsaver.admin:
+    description: "Allows use of all CoordSaver commands."
+    default: op
+    children:
+      coordsaver.globalcoords.set: true
+      coordsaver.globalcoords.list: true
+      coordsaver.globalcoords.remove: true
+      coordsaver.globalcoords.clear: true
+  
+  coordsaver.globalcoords.set:
+    description: "Allows players to set global coordinates."
+    default: op
+  
+  coordsaver.globalcoords.list:
+    description: "Allows players to list global coordinates."
+    default: true
+  
+  coordsaver.globalcoords.remove:
+    description: "Allows players to remove global coordinates."
+    default: op
+  
+  coordsaver.globalcoords.clear:
+    description: "Allows players to clear all global coordinates."
+    default: op
