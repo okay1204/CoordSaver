@@ -24,9 +24,9 @@ permissions:
       coordsaver.globalcoords.clear: true
       coordsaver.coords.set: true
       coordsaver.coords.list: true
+      coordsaver.coords.list.others: true
       coordsaver.coords.remove: true
       coordsaver.coords.clear: true
-      coordsaver.coords.others: true
   
   coordsaver.globalcoords.set:
     description: "Allows players to set global coordinates."
@@ -51,6 +51,10 @@ permissions:
   coordsaver.coords.list:
     description: "Allows players to list their own coordinates."
     default: true
+    
+  coordsaver.coords.list.others:
+    description: "Allows players to view other players' coordinates."
+    default: op
 
   coordsaver.coords.remove:
     description: "Allows players to remove their own coordinates."
@@ -59,7 +63,3 @@ permissions:
   coordsaver.coords.clear:
     description: "Allows players to clear all their own coordinates."
     default: true
-
-  coordsaver.coords.others:
-    description: "Allows players to view other players' coordinates."
-    default: op

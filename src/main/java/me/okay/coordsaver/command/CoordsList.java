@@ -1,7 +1,9 @@
 package me.okay.coordsaver.command;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -22,7 +24,7 @@ public class CoordsList extends CustomSubcommand {
             "list",
             "Lists all your saved coordinates",
             "coordsaver.coords.list",
-            "list [<page>]"
+            "list [<page>] [<player>]"
         );
 
         this.plugin = plugin;
@@ -30,12 +32,10 @@ public class CoordsList extends CustomSubcommand {
 
     @Override
     public boolean onRun(CommandSender sender, CustomSubcommand command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ColorFormat.colorize("&cThis command can only be run by a player."));
+        if (args.length > 1 && !sender.hasPermission("coordsaver.coords.list.others")) {
+            sender.sendMessage(ColorFormat.colorize("&cYou do not have permission to view other players' coordinates. &7(coordsaver.coords.list.others)"));
             return true;
         }
-
-        Player player = (Player) sender;
 
         int page;
         if (args.length < 1) {
@@ -46,7 +46,7 @@ public class CoordsList extends CustomSubcommand {
                 page = Integer.parseInt(args[0]);
             }
             catch (NumberFormatException e) {
-                player.sendMessage(ColorFormat.colorize("&cInvalid page number."));
+                sender.sendMessage(ColorFormat.colorize("&cInvalid page number."));
                 return true;
             }
 
@@ -55,9 +55,27 @@ public class CoordsList extends CustomSubcommand {
             }
         }
 
-        int maxPages = (int) Math.ceil(plugin.getDatabase().getPrivateCoordinatesCount(player.getUniqueId()) / (double) CoordSaver.COORDS_PER_PAGE);
+        Player targetPlayer;
+        if (args.length < 2) {
+            if (sender instanceof Player) {
+                targetPlayer = (Player) sender;
+            }
+            else {
+                sender.sendMessage(ColorFormat.colorize("&cYou must specify a player if using this command from console."));
+                return false;
+            }
+        }
+        else {
+            targetPlayer = plugin.getServer().getPlayer(args[1]);
+            if (targetPlayer == null) {
+                sender.sendMessage(ColorFormat.colorize("&cPlayer not found."));
+                return true;
+            }
+        }
+
+        int maxPages = (int) Math.ceil(plugin.getDatabase().getPrivateCoordinatesCount(targetPlayer.getUniqueId()) / (double) CoordSaver.COORDS_PER_PAGE);
         if (maxPages == 0) {
-            player.sendMessage(ColorFormat.colorize("&cYou do not have any coordinates saved."));
+            sender.sendMessage(ColorFormat.colorize("&c" + (sender == targetPlayer ? "You do" : targetPlayer.getName() + " does") + " not have any coordinates saved."));
             return true;
         }
 
@@ -65,7 +83,7 @@ public class CoordsList extends CustomSubcommand {
             page = maxPages;
         }
 
-        List<Coordinate> coordinates = plugin.getDatabase().paginatePrivateCoordinates(player.getUniqueId(), page);
+        List<Coordinate> coordinates = plugin.getDatabase().paginatePrivateCoordinates(targetPlayer.getUniqueId(), page);
 
         TextComponent backArrow;
         if (page == 1) {
@@ -87,15 +105,24 @@ public class CoordsList extends CustomSubcommand {
             forwardArrow.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/coordsaver:coords list " + (page + 1)));
         }
 
-        TextComponent centerText = new TextComponent(ColorFormat.colorize("&6" + player.getName() + "'s Coordinate List: &e(Page " + page + " of " + maxPages + ")"));
+        TextComponent centerText = new TextComponent(ColorFormat.colorize("&6" + targetPlayer.getName() + "'s Coordinate List: &e(Page " + page + " of " + maxPages + ")"));
 
-        player.sendMessage(CoordSaver.BORDER_LINE);
+        sender.sendMessage(CoordSaver.BORDER_LINE);
         sender.spigot().sendMessage(backArrow, centerText, forwardArrow);
         for (Coordinate coordinate : coordinates) {
-            player.sendMessage(ColorFormat.colorize("&e- " + coordinate.toString()));
+            sender.sendMessage(ColorFormat.colorize("&e- " + coordinate.toString()));
         }
-        player.sendMessage(CoordSaver.BORDER_LINE);
+        sender.sendMessage(CoordSaver.BORDER_LINE);
 
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, CustomSubcommand command, String label, String[] args) {
+        if (args.length == 2 && sender.hasPermission("coordsaver.coords.list.others")) {
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(name -> name.startsWith(args[1])).collect(Collectors.toList());
+        }
+
+        return List.of();
     }
 }
