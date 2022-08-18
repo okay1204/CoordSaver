@@ -1,4 +1,4 @@
-package me.okay.coordsaver.command.subcommand;
+package me.okay.coordsaver.command;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,14 +13,14 @@ import me.okay.coordsaver.CoordSaver;
 import me.okay.coordsaver.CustomSubcommand;
 import me.okay.coordsaver.utils.ColorFormat;
 
-public class GlobalCoordsSet extends CustomSubcommand {
+public class CoordsSet extends CustomSubcommand {
     private final CoordSaver plugin;
 
-    public GlobalCoordsSet(CoordSaver plugin) {
+    public CoordsSet(CoordSaver plugin) {
         super(
             "set",
-            "Set a global coordinate",
-            "coordsaver.globalcoords.set",
+            "Set a coordinate",
+            "coordsaver.coords.set",
             "set <name> [<x> <y> <z>] [<world>]"
         );
 
@@ -32,10 +32,12 @@ public class GlobalCoordsSet extends CustomSubcommand {
         int x, y, z;
         String world;
 
-        if (!(sender instanceof Player) && args.length < 5) {
-            sender.sendMessage(ColorFormat.colorize("&cx, y, z and world are required arguments if run from console."));
-            return false;
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ColorFormat.colorize("&cThis command can only be run by a player."));
+            return true;
         }
+
+        Player player = (Player) sender;
 
         if (args.length < 1) {
             return false;
@@ -43,7 +45,7 @@ public class GlobalCoordsSet extends CustomSubcommand {
 
         String name = args[0];
         if (name.strip().isEmpty()) {
-            sender.sendMessage(ColorFormat.colorize("&cName cannot be empty."));
+            player.sendMessage(ColorFormat.colorize("&cName cannot be empty."));
             return true;
         }
 
@@ -66,19 +68,19 @@ public class GlobalCoordsSet extends CustomSubcommand {
                 world = args[4];
             }
             else {
-                world = ((Player) sender).getWorld().getName();
+                world = player.getWorld().getName();
             }
         }
         else {
-            Location playerLocation = ((Player) sender).getLocation();
+            Location playerLocation = player.getLocation();
             x = playerLocation.getBlockX();
             y = playerLocation.getBlockY();
             z = playerLocation.getBlockZ();
             world = playerLocation.getWorld().getName();
         }
         
-        plugin.getDatabase().saveGlobalCoordinates(name, x, y, z, world);
-        sender.sendMessage(ColorFormat.colorize("&aGlobal coordinate &6" + name + "&a set to &6" + x + " " + y + " " + z + " " + world));
+        plugin.getDatabase().savePrivateCoordinates(player.getUniqueId(), name, x, y, z, world);
+        sender.sendMessage(ColorFormat.colorize("&aCoordinate &6" + name + "&a set to &6" + x + " " + y + " " + z + " " + world));
 
         return true;
     }

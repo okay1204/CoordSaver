@@ -1,4 +1,4 @@
-package me.okay.coordsaver.command.subcommand;
+package me.okay.coordsaver.command;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class GloballCoordsList extends CustomSubcommand {
     public GloballCoordsList(CoordSaver plugin) {
         super(
             "list",
-            "Lists all global coordinate",
+            "Lists all global coordinates",
             "coordsaver.globalcoords.list",
             "list [<page>]"
         );
@@ -60,7 +60,7 @@ public class GloballCoordsList extends CustomSubcommand {
             page = maxPages;
         }
 
-        List<Coordinate> coordinates = plugin.getDatabase().paginateGlobalCoordinates(page, COORDS_PER_PAGE);
+        List<Coordinate> coordinates = plugin.getDatabase().paginateGlobalCoordinates(page);
 
         TextComponent backArrow;
         if (page == 1) {

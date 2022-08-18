@@ -8,6 +8,10 @@ commands:
   globalcoords:
     description: "Manage global coordinates."
     usage: "/globalcoords"
+
+  coords:
+    description: "Manage your own coordinates."
+    usage: "/coords"
   
 permissions:
   coordsaver.admin:
@@ -18,6 +22,11 @@ permissions:
       coordsaver.globalcoords.list: true
       coordsaver.globalcoords.remove: true
       coordsaver.globalcoords.clear: true
+      coordsaver.coords.set: true
+      coordsaver.coords.list: true
+      coordsaver.coords.remove: true
+      coordsaver.coords.clear: true
+      coordsaver.coords.others: true
   
   coordsaver.globalcoords.set:
     description: "Allows players to set global coordinates."
@@ -33,4 +42,24 @@ permissions:
   
   coordsaver.globalcoords.clear:
     description: "Allows players to clear all global coordinates."
+    default: op
+
+  coordsaver.coords.set:
+    description: "Allows players to set their own coordinates."
+    default: true
+
+  coordsaver.coords.list:
+    description: "Allows players to list their own coordinates."
+    default: true
+
+  coordsaver.coords.remove:
+    description: "Allows players to remove their own coordinates."
+    default: true
+  
+  coordsaver.coords.clear:
+    description: "Allows players to clear all their own coordinates."
+    default: true
+
+  coordsaver.coords.others:
+    description: "Allows players to view other players' coordinates."
     default: op

@@ -126,7 +126,7 @@ public abstract class CustomSubcommand {
             }
         }
         else {
-            if (!sender.hasPermission(permission)) {
+            if (permission != null && !sender.hasPermission(permission)) {
                 sender.sendMessage(getPermissionMessage());
                 return CommandResult.PERMISSION_FAILURE;
             }

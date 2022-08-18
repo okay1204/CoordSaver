@@ -79,7 +79,7 @@ public class Database {
     
     public void savePrivateCoordinates(UUID uuid, String name, int x, int y, int z, String world) {
         try {
-            PreparedStatement statement = conn.prepareStatement("INSERT INTO OR REPLACE INTO PrivateCoordinates VALUES (?, ?, ?, ?, ?, ?);");
+            PreparedStatement statement = conn.prepareStatement("INSERT OR REPLACE INTO PrivateCoordinates VALUES (?, ?, ?, ?, ?, ?);");
             statement.setString(1, uuid.toString());
             statement.setString(2, name);
             statement.setInt(3, x);
@@ -93,16 +93,73 @@ public class Database {
         }
     }
 
-    public void deletePrivateCoordinates(UUID uuid, String name) {
+    public boolean deletePrivateCoordinates(UUID uuid, String name) {
         try {
             PreparedStatement statement = conn.prepareStatement("DELETE FROM PrivateCoordinates WHERE uuid = ? AND name = ?;");
             statement.setString(1, uuid.toString());
             statement.setString(2, name);
+
+            int deleted = statement.executeUpdate();
+
+            if (deleted == 0) {
+                return false;
+            }
+            
+            return true;
+        }
+        catch (SQLException e) {
+            logger.severe(e.getMessage());
+        }
+
+        return false;
+    }
+
+    public void clearPrivateCoordinates(UUID uuid) {
+        try {
+            PreparedStatement statement = conn.prepareStatement("DELETE FROM PrivateCoordinates WHERE uuid = ?;");
+            statement.setString(1, uuid.toString());
             statement.execute();
         }
         catch (SQLException e) {
             logger.severe(e.getMessage());
         }
+    }
+
+    public int getPrivateCoordinatesCount(UUID uuid) {
+        try {
+            PreparedStatement statement = conn.prepareStatement("SELECT COUNT(*) FROM PrivateCoordinates WHERE uuid = ?;");
+            statement.setString(1, uuid.toString());
+            ResultSet result = statement.executeQuery();
+
+            if (result.next()) {
+                return result.getInt(1);
+            }
+        }
+        catch (SQLException e) {
+            logger.severe(e.getMessage());
+        }
+        return -1;
+    }
+
+    public List<Coordinate> paginatePrivateCoordinates(UUID uuid, int page) {
+        try {
+            PreparedStatement statement = conn.prepareStatement("SELECT * FROM PrivateCoordinates WHERE uuid = ? ORDER BY name LIMIT ?, ?;");
+            statement.setString(1, uuid.toString());
+            statement.setInt(2, (page - 1) * CoordSaver.COORDS_PER_PAGE);
+            statement.setInt(3, CoordSaver.COORDS_PER_PAGE);
+            ResultSet result = statement.executeQuery();
+            
+            List<Coordinate> coordinates = new ArrayList<>();
+            while (result.next()) {
+                coordinates.add(new Coordinate(result.getString("name"), result.getInt("x"), result.getInt("y"), result.getInt("z"), result.getString("world")));
+            }
+
+            return coordinates;
+        }
+        catch (SQLException e) {
+            logger.severe(e.getMessage());
+        }
+        return null;
     }
 
     public void saveGlobalCoordinates(String name, int x, int y, int z, String world) {
@@ -164,11 +221,11 @@ public class Database {
         return -1;
     }
 
-    public List<Coordinate> paginateGlobalCoordinates(int page, int perPage) {
+    public List<Coordinate> paginateGlobalCoordinates(int page) {
         try {
-            PreparedStatement statement = conn.prepareStatement("SELECT * FROM GlobalCoordinates LIMIT ?, ?;");
-            statement.setInt(1, (page - 1) * perPage);
-            statement.setInt(2, perPage);
+            PreparedStatement statement = conn.prepareStatement("SELECT * FROM GlobalCoordinates ORDER BY name LIMIT ?, ?;");
+            statement.setInt(1, (page - 1) * CoordSaver.COORDS_PER_PAGE);
+            statement.setInt(2, CoordSaver.COORDS_PER_PAGE);
             ResultSet result = statement.executeQuery();
             
             List<Coordinate> coordinates = new ArrayList<>();

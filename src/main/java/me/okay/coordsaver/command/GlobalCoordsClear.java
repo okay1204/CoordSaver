@@ -1,4 +1,4 @@
-package me.okay.coordsaver.command.subcommand;
+package me.okay.coordsaver.command;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
