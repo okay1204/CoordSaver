@@ -3,7 +3,10 @@ package me.okay.coordsaver;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -104,7 +107,7 @@ public class Database {
 
     public void saveGlobalCoordinates(String name, int x, int y, int z, String world) {
         try {
-            PreparedStatement statement = conn.prepareStatement("INSERT INTO OR REPLACE INTO GlobalCoordinates VALUES (?, ?, ?, ?, ?);");
+            PreparedStatement statement = conn.prepareStatement("INSERT OR REPLACE INTO GlobalCoordinates VALUES (?, ?, ?, ?, ?);");
             statement.setString(1, name);
             statement.setInt(2, x);
             statement.setInt(3, y);
@@ -117,14 +120,67 @@ public class Database {
         }
     }
 
-    public void deleteGlobalCoordinates(String name) {
+    public boolean deleteGlobalCoordinates(String name) {
         try {
             PreparedStatement statement = conn.prepareStatement("DELETE FROM GlobalCoordinates WHERE name = ?;");
             statement.setString(1, name);
+            int deleted = statement.executeUpdate();
+
+            if (deleted == 0) {
+                return false;
+            }
+            
+            return true;
+        }
+        catch (SQLException e) {
+            logger.severe(e.getMessage());
+        }
+
+        return false;
+    }
+
+    public void clearGlobalCoordinates() {
+        try {
+            PreparedStatement statement = conn.prepareStatement("DELETE FROM GlobalCoordinates;");
             statement.execute();
         }
         catch (SQLException e) {
             logger.severe(e.getMessage());
         }
+    }
+
+    public int getGlobalCoordinatesCount() {
+        try {
+            PreparedStatement statement = conn.prepareStatement("SELECT COUNT(*) FROM GlobalCoordinates;");
+            ResultSet result = statement.executeQuery();
+
+            if (result.next()) {
+                return result.getInt(1);
+            }
+        }
+        catch (SQLException e) {
+            logger.severe(e.getMessage());
+        }
+        return -1;
+    }
+
+    public List<Coordinate> paginateGlobalCoordinates(int page, int perPage) {
+        try {
+            PreparedStatement statement = conn.prepareStatement("SELECT * FROM GlobalCoordinates LIMIT ?, ?;");
+            statement.setInt(1, (page - 1) * perPage);
+            statement.setInt(2, perPage);
+            ResultSet result = statement.executeQuery();
+            
+            List<Coordinate> coordinates = new ArrayList<>();
+            while (result.next()) {
+                coordinates.add(new Coordinate(result.getString("name"), result.getInt("x"), result.getInt("y"), result.getInt("z"), result.getString("world")));
+            }
+
+            return coordinates;
+        }
+        catch (SQLException e) {
+            logger.severe(e.getMessage());
+        }
+        return null;
     }
 }

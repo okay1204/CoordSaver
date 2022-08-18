@@ -110,14 +110,20 @@ public abstract class CustomSubcommand {
                 }
             }
 
-            // form a usage command that combines all subcommands
-            String allUsages = ColorFormat.colorize("&cUsages: \n");
-            for (CustomSubcommand subcommand : subcommands) {
-                allUsages += subcommand.getFullUsage() + "\n";
+            boolean isSuccessful = onRun(sender, command, label, args);
+            if (!isSuccessful) {
+                // form a usage command that combines all subcommands
+                String allUsages = ColorFormat.colorize("&cUsages: \n");
+                for (CustomSubcommand subcommand : subcommands) {
+                    allUsages += subcommand.getFullUsage() + "\n";
+                }
+    
+                sender.sendMessage(allUsages);
+                return CommandResult.USAGE_FAILURE;
             }
-
-            sender.sendMessage(allUsages);
-            return CommandResult.USAGE_FAILURE;
+            else {
+                return CommandResult.SUCCESS;
+            }
         }
         else {
             if (!sender.hasPermission(permission)) {
@@ -143,24 +149,24 @@ public abstract class CustomSubcommand {
 
     public List<String> onTabComplete(CommandSender sender, CustomSubcommand command, String label, String[] args) {
         if (getSubcommands().size() > 0) {
-            ArrayList<String> subcommandNames = new ArrayList<String>();
+            List<String> tabCompleteStrings = new ArrayList<String>();
 
             if (args.length == 1) {
                 for (CustomSubcommand subcommand : getSubcommands()) {
                     if (subcommand.getName().startsWith(args[0])) {
-                        subcommandNames.add(subcommand.getName());
+                        tabCompleteStrings.add(subcommand.getName());
                     }
                 }
             }
             else {
                 for (CustomSubcommand subcommand : getSubcommands()) {
                     if (subcommand.getName().equals(args[0])) {
-                        subcommandNames.addAll(subcommand.onTabComplete(sender, this, label, cutOffFirstArg(args)));
+                        tabCompleteStrings.addAll(subcommand.onTabComplete(sender, this, label, cutOffFirstArg(args)));
                     }
                 }
             }
             
-            return subcommandNames;
+            return tabCompleteStrings;
         }
 
         return List.of();
